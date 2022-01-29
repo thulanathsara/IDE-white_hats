@@ -1,0 +1,162 @@
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox
+from tkinter.filedialog import asksaveasfilename, askopenfilename
+from tkinter.scrolledtext import ScrolledText
+import subprocess
+window = Tk()
+window.title("Code Editor")
+window.config(bg='#04007F')
+menu = Menu(window)
+window.config(menu=menu)
+editor = ScrolledText(window, font=("Consolas", 12), wrap=None)
+editor.pack(fill=BOTH, expand=1)
+editor.focus()
+file_path = ""
+def open_file(event=None):
+    global code, file_path
+    open_path = askopenfilename(filetypes=[("Python", "*.py")])
+    file_path = open_path
+    with open(open_path, "r") as file:
+        code = file.read()
+        editor.delete(1.0, END)
+        editor.insert(1.0, code)
+window.bind("<Control-o>", open_file)
+def save_file(event=None):
+    global code, file_path
+    if file_path == '':
+        save_path = asksaveasfilename(defaultextension = ".py", filetypes=[("Python File", "*.py")])
+        file_path =save_path
+    else:
+        save_path = file_path
+    with open(save_path, "w") as file:
+        code = editor.get(1.0, END)
+        file.write(code)
+window.bind("<Control-s>", save_file)
+def save_as(event=None):
+    global code, file_path
+    save_path = asksaveasfilename(defaultextension = ".py", filetypes=[("Python File", "*.py")])
+    file_path = save_path
+    with open(save_path, "w") as file:
+        code = editor.get(1.0, END)
+        file.write(code)
+window.bind("<Control-S>", save_as)
+def run(event=None):
+    global code, file_path
+    if file_path == '':
+        messagebox.showerror("User Error", "    Please save your code in order to run your program   ")
+        return
+    '''
+    code = editor.get(1.0, END)
+    exec(code)
+    '''    
+    cmd = f"python {file_path}"
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output, error =  process.communicate()
+    output_window.delete(1.0, END)
+    output_window.insert(1.0, output)
+    output_window.insert(1.0, error)
+window.bind("<F5>", run)
+btn = Button(window, text=':arrow_forwards:', bd=0, height=0, width=3,
+                command = run)
+btn.pack(side=RIGHT, padx=10, pady=0)
+def close(event=None):
+    window.destroy()
+window.bind("<Control-q>", close)
+def cut_text(event=None):
+        editor.event_generate(("<<Cut>>"))
+def copy_text(event=None):
+        editor.event_generate(("<<Copy>>"))
+def paste_text(event=None):
+        editor.event_generate(("<<Paste>>"))
+def redo():
+    text=Text(window, width=60, height=20, undo=True)
+    text.pack()
+def about():
+    save_prompt = Toplevel()
+    text = Label(save_prompt, text='The Ultimate Python IDE is an IDE specially designed for python programming. Created by White Hats team '
+    'for the HackAI Hackathon competition.',  font=("Arial",16), height=20, width=120)
+    text.pack()
+def version():
+    save_prompt = Toplevel()
+    text = Label(save_prompt, text='The Version of the IDE is: 1.0.0',  font=("Arial",16), height=10, width=50)
+    text.pack()
+def light():
+    editor.config(bg="white", fg="black")
+    output_window.config(bg="white", fg="black")
+def dark():
+    editor.config(fg="white", bg="#1A1A1A")
+    output_window.config(fg="white", bg="#1A1A1A")
+def high_contrast():
+    editor.config(fg="yellow", bg="#00172D")
+    output_window.config(fg="#12004A", bg="#02A812")
+def happy():
+    editor.config(fg="white", bg="#AB0C24")
+    output_window.config(fg="black", bg="#00B2BF")
+def blue():
+    editor.config(fg="white", bg="#08278A")
+    output_window.config(fg="white", bg="#0264B5")
+def light():
+    editor.config(bg='white',
+    fg='black')
+    output_window.config(bg='White',
+    fg='white')  
+dev_menu = Menu(menu, tearoff=0)
+file_menu = Menu(menu, tearoff=0)
+edit_menu = Menu(menu, tearoff=0)
+run_menu = Menu(menu, tearoff=0)
+view_menu = Menu(menu, tearoff=0)
+theme_menu = Menu(menu, tearoff=0)
+help_menu = Menu(menu, tearoff=0)
+file_menu.add_command(label="Open", accelerator="Ctrl+O", command=open_file)
+file_menu.add_separator()
+file_menu.add_command(label="Save", accelerator="Ctrl+S", command=save_file)
+file_menu.add_command(label="Save As", accelerator="Ctrl+Shift+S", command=save_as)
+file_menu.add_separator()
+file_menu.add_command(label="Exit", accelerator="Ctrl+Q", command=close)
+edit_menu.add_command(label="Undo", command=redo)
+edit_menu.add_separator()
+edit_menu.add_command(label="Cut", command=cut_text)
+edit_menu.add_command(label="Copy", command=copy_text)
+edit_menu.add_command(label="Paste", command=paste_text)
+run_menu.add_command(label=":arrow_forwards: Run", accelerator="F5", command=run)
+help_menu.add_command(label="About", command=about)
+help_menu.add_command(label="Version", command=version)
+theme_menu.add_command(label="Eternal light", command=light)
+theme_menu.add_command(label="Space Black", command=dark)
+theme_menu.add_command(label="Marble Blue", command=blue)
+theme_menu.add_command(label="White Hacker", command=high_contrast)
+theme_menu.add_command(label="Future World", command=happy)
+menu.add_cascade(label="File", menu=file_menu)
+menu.add_cascade(label="Edit", menu=edit_menu)
+menu.add_cascade(label=":arrow_forwards: Run", menu=run_menu)
+menu.add_cascade(label ="View", menu=view_menu)
+menu.add_cascade(label ="Theme", menu=theme_menu)
+menu.add_cascade(label ="Help", menu=help_menu)
+output_window = ScrolledText(window, font = ("Consolas", 9), height=8)
+output_window.pack(fill=BOTH, expand=1)
+show_status_bar = BooleanVar()
+show_status_bar.set(True)
+def hide_statusbar():
+    global show_status_bar
+    if show_status_bar:
+        status_bars.pack_forget()
+        show_status_bar = False
+    else :
+        status_bars.pack(side=BOTTOM)
+        show_status_bar = True
+view_menu.add_checkbutton(label = "Status Bar" , onvalue = True, offvalue = 0,variable = show_status_bar , command = hide_statusbar)
+status_bars = ttk.Label(window,text = "        Made by the White Hats Team   characters: 0 words: 0          ")
+status_bars.pack(side = BOTTOM)
+status_bars.config()
+text_change = False
+def change_word(event = None):
+    global text_change
+    if editor.edit_modified():
+        text_change = True
+        word = len(editor.get(1.0, "end-1c").split())
+        chararcter = len(editor.get(1.0, "end-1c").replace(" ",""))
+        status_bars.config(text = f"        Made by the White Hats Team   characters: {chararcter} words: {word}          ")
+    editor.edit_modified(False)
+editor.bind("<<Modified>>",change_word)
+window.mainloop()
